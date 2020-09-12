@@ -28,7 +28,7 @@ class Data:
                     json_path = f
                     with open(dict_address+'\\'+json_path, 'r', encoding='utf-8') as file:  # 改为逐行读入
                         for line in file.readlines():
-                            x = self.__parseDict(json.loads(line), '')  # 逐行处理
+                            x = self.__parseDict(json.loads(line), '')  
                             records.append(x)
 
         # 对整个数据的字典列表的分析整理，并输出到json文件
