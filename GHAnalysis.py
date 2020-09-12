@@ -2,6 +2,7 @@ import json
 import os
 import argparse
 
+
 class Data:
     def __init__(self, dict_address: int = None, reload: int = 0):  # 构造函数初始化
         if reload == 1:  # 支持重复查询，当一次运行完之后，data实例被销毁后，self.__4Events4PerP也消失，故下面要将数据存入json并在reload
@@ -10,6 +11,7 @@ class Data:
         if dict_address is None and not os.path.exists('1.json') and not os.path.exists('2.json') and not os.path.exists('3.json'):
             raise RuntimeError('error: init failed')  # 若未初始化过，无分析后的json，而进行查询则报错
         # 赋值self.__4Events4PerP以支持查询
+
         x = open('1.json', 'r', encoding='utf-8').read()
         self.__4Events4PerP = json.loads(x)
         x = open('2.json', 'r', encoding='utf-8').read()
@@ -19,27 +21,22 @@ class Data:
 
     # 建立数据库的过程（分析整理数据）
     def __init(self, dict_address: str):
-        json_list = []
+        records = []
         for root, dic, files in os.walk(dict_address):
             for f in files:
                 if f[-5:] == '.json':
                     json_path = f
-                    x = open(dict_address+'\\'+json_path,
-                             'r', encoding='utf-8').read()  # 读出目标文件的内容存在x中
-                    str_list = [_x for _x in x.split('\n') if len(_x) > 0]
-                    for i, _str in enumerate(str_list):
-                        try:
-                            json_list.append(json.loads(_str))
-                        except:
-                            pass
-        records = self.__listOfNestedDict2ListOfDict(json_list)  # 将字符串列表转换为字典列表
+                    with open(dict_address+'\\'+json_path, 'r', encoding='utf-8') as file:  # 改为逐行读入
+                        for line in file.readlines():
+                            x = self.__parseDict(json.loads(line), '')  # 逐行处理
+                            records.append(x)
 
         # 对整个数据的字典列表的分析整理，并输出到json文件
         self.__4Events4PerP = {}
         self.__4Events4PerR = {}
         self.__4Events4PerPPerR = {}
-        for i in records:
-            if not self.__4Events4PerP.get(i['actor__login'], 0):
+        for i in records:  # 字典列表是为了遍历
+            if not self.__4Events4PerP.get(i['actor__login'], 0):  # *
                 self.__4Events4PerP.update({i['actor__login']: {}})
                 self.__4Events4PerPPerR.update({i['actor__login']: {}})
             self.__4Events4PerP[i['actor__login']][i['type']
@@ -61,24 +58,16 @@ class Data:
         with open('3.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerPPerR,f)
 
-    # 嵌套字典的递归建立
+    # 嵌套字典的递归建立并对内层字典作整理
     def __parseDict(self, d: dict, prefix: str):
         _d = {}
         for k in d.keys():
             if str(type(d[k]))[-6:-2] == 'dict':
                 _d.update(self.__parseDict(d[k], k))
             else:
-                _k = f'{prefix}__{k}' if prefix != '' else k
+                _k = f'{prefix}__{k}' if prefix != '' else k  # 整理为上面*处的调用形式：i[actor__login]
                 _d[_k] = d[k]
         return _d
-
-    # 将字符串列表转换为字典列表
-    def __listOfNestedDict2ListOfDict(self, a: list):
-        records = []
-        for d in a:
-            _d = self.__parseDict(d, '')
-            records.append(_d)
-        return records
 
     # 3种查询函数
     def getEventsUsers(self, username: str, event: str) -> int:
