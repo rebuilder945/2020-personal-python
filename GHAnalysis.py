@@ -54,21 +54,24 @@ class Data:
         rRepo = dic['repo']['name']
         rType = dic['type']
 
-        if not self.__4Events4PerP.get(rId, 0):  # *
-            self.__4Events4PerP.update({rId: {}})
-            self.__4Events4PerPPerR.update({rId: {}})
-        self.__4Events4PerP[rId][rType] \
-            = self.__4Events4PerP[rId].get(rType, 0) + 1
+        if rId not in self.__4Events4PerP:
+            self.__4Events4PerP[rId] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0, "PullRequestEvent": 0}
+        self.__4Events4PerP[rId][rType] += 1
 
-        if not self.__4Events4PerR.get(rRepo, 0):
-            self.__4Events4PerR.update({rRepo: {}})
-        self.__4Events4PerR[rRepo][rType] \
-            = self.__4Events4PerR[rRepo].get(rType, 0) + 1
+        if rRepo not in self.__4Events4PerR:
+            self.__4Events4PerR[rRepo] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0,
+                                          "PullRequestEvent": 0}
+        self.__4Events4PerR[rRepo][rType] += 1
 
-        if not self.__4Events4PerPPerR[rId].get(rRepo, 0):
-            self.__4Events4PerPPerR[rId].update({rRepo: {}})
-        self.__4Events4PerPPerR[rId][rRepo][rType] \
-            = self.__4Events4PerPPerR[rId][rRepo].get(rType, 0) + 1
+        if rId not in self.__4Events4PerPPerR:
+            self.__4Events4PerPPerR[rId] = {}
+            self.__4Events4PerPPerR[rId][rRepo] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0,
+                                                   "PullRequestEvent": 0}
+
+        if rRepo not in self.__4Events4PerPPerR:
+            self.__4Events4PerPPerR[rId][rRepo] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0,
+                                                   "PullRequestEvent": 0}
+        self.__4Events4PerPPerR[rId][rRepo][rType] += 1
 
     def getPerP_EventNum(self, username, event):
 
@@ -118,7 +121,8 @@ class Run:
         if(cmd.init):
             self.data = Data(cmd.init, 1)
             return 'inited'
-        else:           
+        else:
+
             self.data = Data()
 
             if cmd.user:
