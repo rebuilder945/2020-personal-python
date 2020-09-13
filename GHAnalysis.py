@@ -11,8 +11,7 @@ class Data:
             return  # 优化
         if jsonAddress is None and not os.path.exists("1.json") and not os.path.exists("2.json") and not os.path.exists("3.path"):
             raise RuntimeError("error: init failed")
-            
-        x = open('1.json', 'r', encoding='utf-8').read()  
+        x = open('1.json', 'r', encoding='utf-8').read()
         self.__4Events4PerP = json.loads(x)
         x = open('2.json', 'r', encoding='utf-8').read()
         self.__4Events4PerR = json.loads(x)
@@ -21,13 +20,14 @@ class Data:
 
     def _init(self, jsonAddress):
 
-        self.__4Events4PerP = {}
-        self.__4Events4PerR = {}
-        self.__4Events4PerPPerR = {}
+
 
         for root, dic, files in os.walk(jsonAddress):
             for f in files:
                 if f[-5:] == '.json':
+                    self.__4Events4PerP = {}
+                    self.__4Events4PerR = {}
+                    self.__4Events4PerPPerR = {}
                     with open(jsonAddress + '\\' + f, 'r', encoding = 'UTF-8') as f:  # 优化
                         while True:
                             i = f.readline()
@@ -40,11 +40,11 @@ class Data:
                                 rType == 'IssueEvent' or rType == 'PullRequestEvent':
                                 self._eventNumAdd(line)
 
-        with open('./1.json', 'w', encoding='utf-8') as f:
+        with open('./1.json', 'a', encoding='utf-8') as f:
             json.dump(self.__4Events4PerP, f)  # 写入
-        with open('./2.json', 'w', encoding='utf-8') as f:
+        with open('./2.json', 'a', encoding='utf-8') as f:
             json.dump(self.__4Events4PerR, f)
-        with open('./3.json', 'w', encoding='utf-8') as f:
+        with open('./3.json', 'a', encoding='utf-8') as f:
             json.dump(self.__4Events4PerPPerR, f)
 
     def _eventNumAdd(self, dic: dict):  # 结构优化
@@ -97,7 +97,6 @@ class Run:
     def __init__(self):
 
         self.parser = argparse.ArgumentParser()
-        self.data = None
         self._parserInit()
         print(self._command())
 
@@ -114,19 +113,19 @@ class Run:
         cmd = self.parser.parse_args()
 
         if cmd.init:
-            self.data = Data(cmd.init, 1)
+            data = Data(cmd.init, 1)
             return 'inited'
         else:
 
-            self.data = Data()
+            data = Data()
 
             if cmd.user:
                 if cmd.repo:
-                    res = self.data.getPerPperR_EventNum(cmd.user, cmd.repo, cmd.event)
+                    res = data.getPerPperR_EventNum(cmd.user, cmd.repo, cmd.event)
                 else:
-                    res = self.data.getPerP_EventNum(cmd.user, cmd.event)
+                    res = data.getPerP_EventNum(cmd.user, cmd.event)
             elif cmd.repo:
-                res = self.data.getPerR_EventNum(cmd.repo, cmd.event)
+                res = data.getPerR_EventNum(cmd.repo, cmd.event)
             else:
                 raise RuntimeError('error: argument -r or -u is required')
         return res
