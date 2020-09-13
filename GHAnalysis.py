@@ -118,10 +118,7 @@ class Run:
         if(cmd.init):
             self.data = Data(cmd.init, 1)
             return 'inited'
-        else:
-            if not cmd.event:
-                raise RuntimeError('error: argument -e is required')
-
+        else:           
             self.data = Data()
 
             if cmd.user:
