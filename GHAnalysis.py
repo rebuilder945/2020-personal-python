@@ -8,11 +8,7 @@ class Data:
 
         if ifload == 1:
             self._init(jsonAddress)
-            return  # 优化
-        if jsonAddress is None and not os.path.exists('1.json') and not \
-            os.path.exists('2.json') and not os.path.exists('3.json'):
-            raise RuntimeError('error: init failed')
-
+            return  # 优化        
         x = open('1.json', 'r', encoding='utf-8').read()  # 待优化-》逐行读入
         self.__4Events4PerP = json.loads(x)
         x = open('2.json', 'r', encoding='utf-8').read()
@@ -28,12 +24,9 @@ class Data:
 
         for root, dic, files in os.walk(jsonAddress):
             for f in files:
-                if f[-3:] == 'son':
+                if f[-5:] == '.json':
                     with open(jsonAddress + '\\' + f, 'r', encoding = 'UTF-8') as f:  # 优化
-                        while True:
-                            line = f.readline()  # 真正实现逐行读入
-                            if not line:
-                                break
+                        for line in f.readlines():
                             i = json.loads(line)
                             rType = i['type']
                               # 控制仅读入4种关注事件
