@@ -9,8 +9,9 @@ class Data:
         if ifload == 1:
             self._init(jsonAddress)
             return  # 优化
-        if jsonAddress is None and not os.path.exists("1.json") and not os.path.exit("2.json") and not os.path.exists("3.path"):
+        if jsonAddress is None and not os.path.exists("1.json") and not os.path.exists("2.json") and not os.path.exists("3.path"):
             raise RuntimeError("error: init failed")
+            
         x = open('1.json', 'r', encoding='utf-8').read()  
         self.__4Events4PerP = json.loads(x)
         x = open('2.json', 'r', encoding='utf-8').read()
