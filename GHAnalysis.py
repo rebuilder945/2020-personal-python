@@ -8,8 +8,10 @@ class Data:
 
         if ifload == 1:
             self._init(jsonAddress)
-            return  # 优化        
-        x = open('1.json', 'r', encoding='utf-8').read()  # 待优化-》逐行读入
+            return  # 优化
+        if jsonAddress is None and not os.path.exists("1.json") and not os.path.exit("2.json") and not os.path.exists("3.path"):
+            raise RuntimeError("error: init failed")
+        x = open('1.json', 'r', encoding='utf-8').read()  
         self.__4Events4PerP = json.loads(x)
         x = open('2.json', 'r', encoding='utf-8').read()
         self.__4Events4PerR = json.loads(x)
@@ -26,45 +28,44 @@ class Data:
             for f in files:
                 if f[-5:] == '.json':
                     with open(jsonAddress + '\\' + f, 'r', encoding = 'UTF-8') as f:  # 优化
-                        for line in f.readlines():
-                            i = json.loads(line)
-                            rType = i['type']
+                        while True:
+                            i = f.readline()
+                            if not i:
+                                break
+                            line = json.loads(i)
+                            rType = line['type']
                               # 控制仅读入4种关注事件
                             if rType == 'PushEvent' or rType == 'IssueCommentEvent' or \
                                 rType == 'IssueEvent' or rType == 'PullRequestEvent':
-                                self._eventNumAdd(i)
+                                self._eventNumAdd(line)
 
-          # 待优化-》逐行写入
-        with open('./1.json', 'w', encoding='utf-8') as f:  # open对象文件若就在同样目录则只要传入文件名，若文件不存在，自动创建该文件
+        with open('./1.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerP, f)  # 写入
         with open('./2.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerR, f)
         with open('./3.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerPPerR, f)
 
-    def _eventNumAdd(self, dic: dict):  # 待优化
+    def _eventNumAdd(self, dic: dict):  # 结构优化
         rId = dic['actor']['login']
         rRepo = dic['repo']['name']
         rType = dic['type']
 
-        if rId not in self.__4Events4PerP:
-            self.__4Events4PerP[rId] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0, "PullRequestEvent": 0}
-        self.__4Events4PerP[rId][rType] += 1
+        if not self.__4Events4PerP.get(rId, 0):  # *
+            self.__4Events4PerP.update({rId: {}})
+            self.__4Events4PerPPerR.update({rId: {}})
+        self.__4Events4PerP[rId][rType] \
+            = self.__4Events4PerP[rId].get(rType, 0) + 1
 
-        if rRepo not in self.__4Events4PerR:
-            self.__4Events4PerR[rRepo] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0,
-                                          "PullRequestEvent": 0}
-        self.__4Events4PerR[rRepo][rType] += 1
+        if not self.__4Events4PerR.get(rRepo, 0):
+            self.__4Events4PerR.update({rRepo: {}})
+        self.__4Events4PerR[rRepo][rType] \
+            = self.__4Events4PerR[rRepo].get(rType, 0) + 1
 
-        if rId not in self.__4Events4PerPPerR:
-            self.__4Events4PerPPerR[rId] = {}
-            self.__4Events4PerPPerR[rId][rRepo] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0,
-                                                   "PullRequestEvent": 0}
-
-        if rRepo not in self.__4Events4PerPPerR:
-            self.__4Events4PerPPerR[rId][rRepo] = {"PushEvent": 0, "IssueCommentEvent": 0, "IssuesEvent": 0,
-                                                   "PullRequestEvent": 0}
-        self.__4Events4PerPPerR[rId][rRepo][rType] += 1
+        if not self.__4Events4PerPPerR[rId].get(rRepo, 0):
+            self.__4Events4PerPPerR[rId].update({rRepo: {}})
+        self.__4Events4PerPPerR[rId][rRepo][rType] \
+            = self.__4Events4PerPPerR[rId][rRepo].get(rType, 0) + 1
 
     def getPerP_EventNum(self, username, event):
 
@@ -97,8 +98,8 @@ class Run:
         self.parser = argparse.ArgumentParser()
         self.data = None
         self._parserInit()
-        self._command()
         print(self._command())
+
 
     def _parserInit(self):
 
@@ -111,7 +112,7 @@ class Run:
 
         cmd = self.parser.parse_args()
 
-        if(cmd.init):
+        if cmd.init:
             self.data = Data(cmd.init, 1)
             return 'inited'
         else:
