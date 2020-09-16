@@ -1,12 +1,13 @@
 import json
 import os
 import argparse
+import time
 
 class Data:
 
-    def __init__(self, jsonAddress: str = None, ifload: int = 0):
+    def __init__(self, jsonAddress: str = None, isinit: int = 0):
 
-        if ifload == 1:
+        if isinit == 1:
             self._init(jsonAddress)
             return  # 优化
         if jsonAddress is None and not os.path.exists("1.json") and not os.path.exists("2.json") and not os.path.exists("3.path"):
@@ -19,15 +20,15 @@ class Data:
         self.__4Events4PerPPerR = json.loads(x)
 
     def _init(self, jsonAddress):
-
+        self.__4Events4PerP = {}
+        self.__4Events4PerR = {}
+        self.__4Events4PerPPerR = {}
 
 
         for root, dic, files in os.walk(jsonAddress):
             for f in files:
                 if f[-5:] == '.json':
-                    self.__4Events4PerP = {}
-                    self.__4Events4PerR = {}
-                    self.__4Events4PerPPerR = {}
+
                     with open(jsonAddress + '\\' + f, 'r', encoding = 'UTF-8') as f:  # 优化
                         while True:
                             i = f.readline()
@@ -40,11 +41,11 @@ class Data:
                                 rType == 'IssueEvent' or rType == 'PullRequestEvent':
                                 self._eventNumAdd(line)
 
-        with open('./1.json', 'a', encoding='utf-8') as f:
+        with open('./1.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerP, f)  # 写入
-        with open('./2.json', 'a', encoding='utf-8') as f:
+        with open('./2.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerR, f)
-        with open('./3.json', 'a', encoding='utf-8') as f:
+        with open('./3.json', 'w', encoding='utf-8') as f:
             json.dump(self.__4Events4PerPPerR, f)
 
     def _eventNumAdd(self, dic: dict):  # 结构优化
@@ -114,7 +115,7 @@ class Run:
 
         if cmd.init:
             data = Data(cmd.init, 1)
-            return 'inited'
+            return 0
         else:
 
             data = Data()
